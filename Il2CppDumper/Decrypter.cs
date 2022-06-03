@@ -1,0 +1,350 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Il2CppDumper
+{
+    unsafe class Decrypter
+    {
+        private static ulong[] shuffleTab = { 0, 13, 10, 7, 4, 1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3 };
+        private static uint[] magicTab_0 = { 0x57b57048, 0x5477c567, 0xc4b69303, 0x914ca323, 0xcc792f22, 0xf6571906, 0xac4a7eb5, 0x94116752, 0x52e8b439, 0xf17ff2b4, 0x96644891, 0x225e86ec, 0xfbc56156, 0xd0d9aedc, 0x8756b13f, 0x88b1e6ac, 0x4e4835c7, 0x60093e3c, 0x9f1c6e5c, 0xe6d27a44, 0x0567abda, 0x15e2c898, 0xa485c294, 0xc1eb5772, 0xe04d0b1a, 0x928e160c, 0xec68e9a6, 0xdd4bd68c, 0x2a913acd, 0xd433f041, 0x2e7b6450, 0x43da4d97, 0x6d9b466c, 0x7f6b0aed, 0x6c2cdc80, 0xda633d3e, 0xb15d65a7, 0x10bf0ce9, 0x61bea4d0, 0xb3284a64, 0x1f585b7a, 0x85239efc, 0x6721d58e, 0x426dd77b, 0xe765e0a8, 0x83bcefa2, 0x1bb205e7, 0x93398ce0, 0x5f7acc69, 0x1eefc196, 0x807e5a8d, 0xb0eaff4b, 0x24c1f7b2, 0xe510cf6b, 0x509d9bfa, 0x2db9d17f, 0x003a6fab, 0x04d03136, 0x9d69419f, 0xa21ab3ca, 0xf595ac29, 0xb5b73b3a, 0xbd78871b, 0x5b9092f4, 0x2c0e4b93, 0x95a6fdbe, 0xf7e083ea, 0xa6f0ed57, 0xcae65e7c, 0xd2ac811f, 0x1870b0c8, 0x8dec22dd, 0x9a41aa2d, 0xa74777bb, 0x35f30e1c, 0x72f972bd, 0x3efe0712, 0xadfde459, 0x018df547, 0x5602eaa4, 0xfe98a527, 0x3a14598f, 0xa917bac4, 0x41af6254, 0xb29fd088, 0x024f4068, 0x68c6821d, 0xf807d479, 0x23e91c00, 0x90fb39cf, 0xcb51c490, 0x708c5d7e, 0xba506ca9, 0x8f990d1e, 0x3f499dfe, 0xdcfc4c60, 0x4018f8b8, 0xee1dc665, 0xce0c00e1, 0x07128419, 0x84940410, 0x4fffaf2b, 0xab629507, 0x4960de75, 0xfced8ae4, 0x512a0116, 0x19c72a24, 0x202ba92f, 0x63cb8b13, 0x26b4d871, 0xd646df82, 0x3d3cb23d, 0xb6758e15, 0x08f5d38a, 0xd5846aad, 0x99831f02, 0x48d74499, 0xa5325878, 0x6e59f343, 0x11089605, 0x0da817fb, 0xe23824d9, 0x44f2a625, 0x1a059f0b, 0x0c1f8d17, 0xaad50feb, 0xbeba3234, 0xcfbb9a0d, 0x820b754e, 0x4b15f1b6, 0xbccf1df7, 0xfa72fbba, 0x983485ee, 0xbbe7f645, 0xc229e25d, 0x336c7f42, 0x713bc792, 0xdbd4a7d2, 0x6fee69af, 0x64e360a1, 0xcdceb5ce, 0x1797e75b, 0x4730130a, 0x2703429d, 0x7a36ce9c, 0xff2f3fcb, 0x16207db7, 0x6ab3adde, 0x4c3d1a04, 0xf42236c5, 0xeb400214, 0xd7f1456e, 0x6b043732, 0x9eabf4b0, 0xfd5a1008, 0x25766d5e, 0xc39e78b1, 0x1d2d74b9, 0xdf3ef94f, 0xe882b73b, 0xc05ccd9e, 0xc6c3bcc0, 0xf9b04e95, 0x31195081, 0xc89371bf, 0x2fccfebc, 0x219c33c3, 0xa3ad2926, 0xe38fbe35, 0x0a80fc49, 0x9cdedb73, 0x6554fa4d, 0xc50109ef, 0xefaa5c89, 0x59e5bd37, 0xf2bd479b, 0xb992d986, 0x7b815470, 0xae3f5176, 0xb400a1d6, 0x3c8b28d1, 0xa06f9c09, 0x697118f1, 0x7ca9bfc2, 0x0e6aa2d4, 0xf30add77, 0x06a51ef5, 0xaf88cb9a, 0x627c11ff, 0x79f47bb3, 0x0fdd3838, 0xe1fa91f6, 0xde8963a3, 0xc924eb53, 0xd31b1bf3, 0xd16e3430, 0xa8a02028, 0x3631bb33, 0x378621df, 0xc774262c, 0x30aeca6d, 0xa1d806e5, 0xb7c214f9, 0x12ca232a, 0x4d8a80e8, 0xf0c86858, 0x09424966, 0x28e4150e, 0x8ac4c96f, 0x4aa26b5a, 0x535f2ed5, 0xd81612fd, 0xe4a75587, 0x1c9aee55, 0xbf0da8d8, 0x7843e15f, 0x03f8da84, 0x5a270818, 0x746603e3, 0x29538fe2, 0x5d0fe3aa, 0x55c05f8b, 0x344494f0, 0x14555274, 0x8b735383, 0x7d1e252e, 0x89067c40, 0x8e2e97f2, 0xe9352dd7, 0x32dbe5ae, 0xeaf798f8, 0x3ba3c363, 0x5ecd5685, 0x3861764c, 0x7edc9001, 0xb825436a, 0xeddf734a, 0x5cb87946, 0x137db9c6, 0x81c9c061, 0x86e12bd3, 0x39d6eca0, 0x2b26a021, 0x585227db, 0x75d1990f, 0x0b3766a5, 0x8c5bb831, 0x468789e6, 0x76132c20, 0xd9a18811, 0x9bf630c1, 0x97d3d27d, 0x66964f62, 0x77a4b6cc, 0x734ee851, 0x45453cc9 };
+        private static uint[] magicTab_1 = { 0xa0e6d549, 0x6253fa4a, 0xa3059eda, 0x5935be8f, 0x6cb9bfd2, 0x428f9be8, 0x5fe828b2, 0x04f1cf8a, 0xfd22a44c, 0x6a6429ef, 0x71de0c88, 0x4b10713c, 0xd0f7cbe5, 0xcc3841ce, 0x4327a299, 0xa4703196, 0x5da35a50, 0x1ca8a17e, 0x09f8c181, 0xc7ecd9f8, 0x723d471b, 0xf75e050b, 0x905409ba, 0xfec1efdf, 0x589d87fe, 0x9b80918c, 0x7d7f3bf2, 0x5e4011c3, 0x84ac5034, 0x2666dcca, 0x6ef2cd30, 0xcfdb0a5d, 0x8ed0f173, 0x7e9c7061, 0x394a1d72, 0x76aba3c4, 0x48f33aaf, 0xaa9a740e, 0xab324d7f, 0x3ddcf9ad, 0x4dcde701, 0x3608619b, 0x34431379, 0x7841e65c, 0x707635f9, 0xa9793f9d, 0xa7937a05, 0x2c1a7d8d, 0x6f5af441, 0xfa570b00, 0x6bcc109e, 0xff69d6ae, 0xd4612f3a, 0x0559f6fb, 0x880d674e, 0xac47e233, 0x2ff9361e, 0xc5a7ab1a, 0x7cd70283, 0x0f2557bc, 0x803ab4eb, 0xa2ada7ab, 0x6d1186a3, 0x85046945, 0x1bdd0e32, 0xb36b238b, 0xf51577e9, 0xe57bcab8, 0xf3c8e1d4, 0xb91782cc, 0x65265506, 0xf9b44093, 0x543cb084, 0x52e126b9, 0xe698812b, 0xece4206c, 0xeb918f20, 0xe872c4b3, 0x9863da1f, 0x177c3948, 0x8d33bae0, 0x01cf1224, 0x022c59b7, 0xbaf4c95f, 0x8a4615ac, 0x5ad6f51c, 0xd3148076, 0x1242e4e6, 0xfc8a9d3d, 0xeeaf528e, 0x44520dd5, 0x99cbe36e, 0x45fa34a4, 0x8c9b8391, 0x5c0b6321, 0xe9dafdc2, 0x0d6e255e, 0x0850f8f0, 0x19967cd0, 0x07128419, 0x81928d9a, 0xea39b651, 0x77039ab5, 0x7548e857, 0xf81c79e2, 0x3f978b4f, 0xd2bcb907, 0x3e3fb23e, 0xde1d8e7d, 0xa14eec38, 0x53491fc8, 0x2924a023, 0x601888a8, 0xe0451716, 0x91fc30cb, 0x96899f87, 0xc2d20456, 0x27cee5bb, 0x4c65de70, 0x1d00980f, 0xbd816613, 0x2db244fc, 0xe730b85a, 0x10099604, 0x0a1b8a12, 0xc09976b4, 0xafa4a9a0, 0xae0c90d1, 0x1ee3d39c, 0x00672b55, 0xda8b6aa2, 0x676d27e4, 0x21137386, 0xf260d8a5, 0x3c74c0dc, 0x79e9df2d, 0x2e510f6f, 0xc1314fc5, 0xfbff3271, 0xf6f63c7a, 0xdb2353d3, 0x8271c609, 0x25859759, 0x16d40039, 0x23580164, 0x3aa956e1, 0x35eb2a08, 0xa63b4374, 0x288c9952, 0x37a058ea, 0x559489f5, 0xe4d3f3c9, 0x11a1af75, 0xbe622d80, 0x4f8695e3, 0x63fbc33b, 0x8bee2cdd, 0x38e22403, 0x2b6fd2c1, 0x9721a6f6, 0x495b03de, 0xd62a5dd8, 0xa5d808e7, 0x0cc61c2f, 0x86e722d6, 0xd9682131, 0x89a55e3f, 0xb8bfbbbd, 0x9a28a8fd, 0x956ad414, 0xcb4dee82, 0x416cd07b, 0x149f72db, 0xbfca14f1, 0xf02baa47, 0xa8d106ec, 0x874f1ba7, 0x94c2ed65, 0x2ac7ebb0, 0x15374baa, 0x9ebe4c22, 0x7a0a94be, 0x648e6c77, 0xbc295f62, 0x7f344910, 0x1f4beaed, 0xb0886818, 0x9d5d07b1, 0x6987627c, 0xe1ed2e67, 0xc8aea511, 0xef076bff, 0x9cf53ec0, 0x317dced7, 0x0e8d6ecd, 0x7ba2adcf, 0xb5b6b5b6, 0x242dae28, 0x93b74229, 0x61b0b1d9, 0xbb5cf02e, 0xcd9078bf, 0xd78264a9, 0xdfb5b70c, 0x9f167553, 0xddfec5ee, 0x57dffb17, 0xf1839336, 0xd15ff294, 0xb7fdc754, 0x4ab8484d, 0x038460c6, 0xb2c31afa, 0x8f78c802, 0x183e45a1, 0x5677c266, 0xed4c191d, 0x329e8544, 0x73957e6a, 0x46197f37, 0x1a753743, 0xd5c9164b, 0x51026d2a, 0x40c4e90a, 0x66c51e95, 0x0bb3b363, 0x13eadd97, 0x3b016f90, 0x20bb4af7, 0xce73332c, 0xe20e65f4, 0xb655fe25, 0xd8c01840, 0x74e0d126, 0xc9069c60, 0x30d5f7a6, 0xcae5d7f3, 0xadefdb42, 0x682f5b0d, 0xdc56fc9f, 0xf4bd4e98, 0xc37a3d27, 0x3336bc35, 0x47b14646, 0xc40f926b, 0x22f03815, 0x4e2eac92, 0x921f7b58, 0x06babd68, 0xb41e8cc7, 0xe3a65c85, 0xc644e089, 0x83d9ff78, 0xb1205169, 0x5b7ecc6d, 0x50aa545b };
+        private static uint[] magicTab_2 = { 0xf343d4be, 0x466cd77c, 0x100847bd, 0x20281247, 0xac294f72, 0x9a0d755c, 0xfdbe2f41, 0xe459171a, 0x3732d1e3, 0x71bf7274, 0xcb9a156f, 0x05e7a155, 0xe25d78ce, 0x2dd753d2, 0x3234045d, 0x65a70bba, 0xb6cccd43, 0xbd37e302, 0xed571c17, 0xf94f65d9, 0x28d1866c, 0x4b9396e9, 0x419f278e, 0xd47942e0, 0x88116346, 0x95071185, 0x6aad6f63, 0x55875e40, 0xb9c6a99a, 0x734a5738, 0xe75bad70, 0xce9cc0d1, 0xc567ee90, 0x89e6fc60, 0x5f8bef27, 0xbe355968, 0xe6ac3256, 0x8fe293b4, 0x27dbe2b5, 0xc96f3023, 0xd8719c53, 0x1df70628, 0x5685e42a, 0x5470c166, 0x63a3646e, 0x6ca900b7, 0x86ec98b9, 0x0feb1032, 0x4f62dc71, 0x429d9de4, 0xd9860375, 0x7c4033e1, 0x74b9a7ca, 0x4c60661b, 0x18f1d396, 0x5274aeb2, 0xeca08331, 0xb23d87db, 0xc2941e62, 0x30c12111, 0x2f22769e, 0xb83136bc, 0x04103e73, 0x11ffd89b, 0xc898af05, 0x7eb516ad, 0x00e174eb, 0x6e5c25fb, 0xdd7749ed, 0x021451a7, 0x33c39b7b, 0xa1d60ee7, 0x2926194a, 0xf4b0244c, 0x8d17b6f8, 0xf1b6f1f2, 0x8419bdf5, 0x67522ef6, 0x764c8286, 0x69afd509, 0x262c7d93, 0xda84b91f, 0x39cf2a1c, 0xe15fc2a4, 0x53833194, 0xc3638144, 0x0116ebcd, 0x57727b0c, 0x9f0ba0e2, 0xbac413f0, 0x479b485a, 0xde75f387, 0xefa2395b, 0x8e150c92, 0x1ef5bc42, 0xcf6b5ff7, 0x7bb3c313, 0x456e6d16, 0x83ea4d07, 0x07128419, 0x871b079f, 0x2c20ccf4, 0x160c2869, 0x5d7eca6b, 0x09ef7fe6, 0x821dd221, 0xa92f9acc, 0x2a24a320, 0x0818e0c0, 0x5b7aa5bf, 0x5c89554d, 0x3136be37, 0x0d1e357e, 0x50818bfe, 0xe9a6568f, 0x9c091a88, 0xc792cbdc, 0xdb732639, 0x7048ed52, 0x150e9203, 0x94f08ea3, 0xa7d26133, 0x252ec7f9, 0x1c00990e, 0x0e1c8f14, 0x8ce029de, 0xb13f3db1, 0x19064cb0, 0xf6450100, 0x72bdc81e, 0x9efc3fc4, 0x78b17979, 0x06e51b3f, 0x754e38ec, 0x61564122, 0xfc49b067, 0x4499f230, 0x24d958df, 0xeaa4ece5, 0xe3aae7e8, 0x36c54ec5, 0x6450949c, 0x9001c43b, 0xc196a408, 0x4d97f93d, 0xbcc07c24, 0xfebc952b, 0x2ed5e9b8, 0x990fcf36, 0xb5ce7729, 0x811f684b, 0xc66554fa, 0xb439e80f, 0x77bb1da0, 0x93037e51, 0xee55a67d, 0xfbba4095, 0xf7b29e26, 0x7a445c35, 0x34306b89, 0x4e954357, 0x3fcb45c8, 0xcd9e7abb, 0xd38ab212, 0xf2b44b98, 0x7db7acc7, 0xb0c8a297, 0xaa2d20a6, 0x3d3e6084, 0x7f42898b, 0x58781fd5, 0x7946e65f, 0x8ae4460a, 0xdf826ca1, 0x3e3cdaee, 0xc49071b6, 0x5a8d3a99, 0xd77bf88a, 0xd27d2d34, 0x22dd370b, 0xabdabf80, 0x1f022364, 0x9bfaea7a, 0x3cc9ffa2, 0x21df8d61, 0x5e7c7001, 0x9dfe85ae, 0x48912c83, 0x92f4e177, 0xf8b8faff, 0xbb338cd6, 0x12fd62f1, 0xe0a85d82, 0x68584a2f, 0x98f85010, 0xb73b5265, 0xa3232bab, 0x3838b53a, 0xa2d4b48d, 0xa527447f, 0x4966b3a5, 0x85ee22d3, 0x97f234c9, 0xa02191c1, 0x03e3ce81, 0xeb5373c3, 0xca6d8a49, 0x9605abef, 0x4a6409cf, 0xe851c9a9, 0xadded054, 0x91f65b1d, 0xd68c67ac, 0x6d5e9f91, 0x2bd33c06, 0x6254fb48, 0x598f80f3, 0x8b13d92c, 0x80e8f76d, 0x0ce9aa58, 0x60a1de04, 0xdc80d6cb, 0x17fbb74f, 0xd17f975e, 0xd0880878, 0xa625fe15, 0xff4b0a0d, 0x14f90d25, 0xaedc6a3e, 0x66a5b1d0, 0x1bf369fc, 0x4068b8a8, 0xd58eddc6, 0xf547bb6a, 0x130afdd7, 0xc0613b2e, 0xf0416ed4, 0xfa4ddfb3, 0x3acd9076, 0x436a02c2, 0xa8d805ea, 0x6fabbadd, 0x232aa82d, 0xa4d0db59, 0x1a04f6da, 0xe5ae883c, 0x3b3a0f50, 0x0aedc58c, 0xaf2bf518, 0x0b1a5aaa, 0xb3ca18fd, 0x517614d8, 0xcc69e59d, 0x35c7f4af, 0x6b5af045, 0xbfc2c64e };
+        private static uint[] magicTab_3 = { 0x564223ed, 0x7941e158, 0x1dd1200e, 0x3d84da3e, 0x3cd9efb2, 0x18e3c184, 0xabb9dce3, 0x4c8187fa, 0x27477e29, 0xaae4e96f, 0x8f83f2d5, 0xf237c81b, 0x48ee53fc, 0xc2c54f33, 0x2192c02c, 0xb29d277b, 0xd95bdea8, 0x22759fa3, 0x428a8af3, 0x5af344e7, 0xc410f136, 0x86007455, 0x8ab1135f, 0x6cd47dca, 0x04f5db96, 0x1287188b, 0xb8f9fe74, 0x92c8dd4b, 0xd33f07a7, 0x5fc1a56d, 0x4e3bedf9, 0x89564cd0, 0x72780ddb, 0xf36afd97, 0x9e79ba41, 0x20cff5a0, 0xb9a4cbf8, 0xf7052991, 0xce742839, 0x7aa6bed7, 0x640acec6, 0xe290b503, 0x9072b748, 0x6557fb4a, 0xb6f2f37d, 0xbc962a72, 0xf90e2498, 0xfe86af11, 0x774aec51, 0x880b795c, 0x9395e8c7, 0x55a57c62, 0xac31576a, 0x75f08652, 0xe4450b06, 0x61382f4c, 0xb515acf2, 0x281146ac, 0x8188ffdc, 0xd4b78c2e, 0x37e00331, 0x24a021a6, 0x05a8ee1a, 0xea4e060f, 0x8d3998d6, 0xa0803060, 0xf4e2761e, 0x49b36670, 0x62df70c3, 0x01c73a1c, 0xd60de62d, 0xc3987abf, 0x338fd737, 0xa5b2d1ea, 0x02206593, 0xa3676fef, 0x0c2b689a, 0x47b86b79, 0x59141b68, 0xba439477, 0x39eb0e38, 0x912f82c4, 0xdabc8127, 0x4a5439ff, 0x96a7094d, 0x7617d9dd, 0x037d501f, 0x67ed9149, 0x1e367f81, 0xd1856da4, 0x8edec759, 0x60651ac0, 0xb7afc6f1, 0x009a0f90, 0xe02adf00, 0x7ec96ad1, 0xa6558e65, 0x7bfb8b5b, 0xffdb9a9d, 0x07128419, 0x0e910299, 0x355a6932, 0x19bef408, 0x6b5cf643, 0xfae97b17, 0x0844bc9c, 0x3a0c51b7, 0x3135bd34, 0x0d765d16, 0x6f332245, 0x9cc3d042, 0x2328aa2f, 0x0ba3e313, 0x941d634e, 0xb3c012f7, 0x1c8c1582, 0x875d41d9, 0x66b0a4c5, 0x5d7bcf6e, 0x1b049e0b, 0xe5183e8a, 0xc7f7aeb9, 0x3b51643b, 0x150f9302, 0x09198910, 0xf5bf4392, 0x2aab2caf, 0x13da2d07, 0x50979de8, 0xa85e836c, 0xe9a95980, 0xa4efe466, 0xf08da218, 0x5bae716b, 0x43d7bf7f, 0x5c26fae2, 0x8c64ad5a, 0xccce423a, 0xb17a78f4, 0xbf7175fd, 0xd0d85828, 0x4502017a, 0x1452a68e, 0x833295df, 0x826fa053, 0xd5eab9a2, 0xa903b6e0, 0xc07f2530, 0x1a59ab87, 0xdbe1b4ab, 0x0afed69f, 0x70c267d8, 0x2c7e92aa, 0xae8b3d69, 0x16e8cc8d, 0x4030e0f0, 0xafd608e5, 0xa708bbe9, 0x51caa864, 0x25fd142a, 0x80d5ca50, 0xded35521, 0x8bec26d3, 0x9f248fcd, 0xa1dd05ec, 0xa23a5a63, 0xdd340aae, 0x38b63bb4, 0x2bf61923, 0x571f1661, 0x6d894846, 0x5370c267, 0xf1d09794, 0x97fa3cc1, 0x294c7320, 0x85e72bda, 0x98ac0444, 0x6e6e17c9, 0x68bba9cc, 0xc8a1963c, 0xcf291db5, 0x17b5f901, 0xef7ce785, 0xdc693f22, 0xca1bfc3f, 0x69e69c40, 0xeb133383, 0x84ba1e56, 0xe177ea8c, 0xad6c62e6, 0x261a4ba5, 0xe8f46c0c, 0xbdcb1ffe, 0x4ddcb276, 0xedc68d86, 0x2ec4f8a9, 0x36bd36bd, 0x2d23a726, 0xc12210bc, 0x32d2e2bb, 0x73253857, 0xfbb44e9b, 0xe7a25489, 0x34075cbe, 0xf6581c1d, 0x46e55ef5, 0x781cd4d4, 0x103d7288, 0x719f5254, 0x445f34f6, 0xcb46c9b3, 0xe3cd808f, 0x99f131c8, 0x4b090c73, 0xc6aa9b35, 0x416dd57c, 0x9a166e47, 0x064fb195, 0xfd61f09e, 0xfc3cc512, 0xb448997e, 0x954056c2, 0xee21d209, 0x6a01c3cf, 0x9d9ee5ce, 0x306888b8, 0x5e9c90e1, 0xec9bb80a, 0xc9fca3b0, 0xb0274d78, 0xe6ff6105, 0x7d2e355e, 0x9b4b5bcb, 0x522df7eb, 0x1f6b4a0d, 0x74adb3de, 0x54f849ee, 0x58492ee4, 0xd806eb24, 0x7f945f5d, 0xcd9377b6, 0xbe2c4071, 0x3f3eb03d, 0xc54dc4ba, 0x11604704, 0xbb1ea1fb, 0x2f99cd25, 0xf8531114, 0x3e6385b1, 0x0fcc3715, 0xdf8e60ad, 0x6382454f, 0x7c7300d2, 0xd262322b, 0x4f66d875, 0xd750d3a1 };
+        private static byte[] magicTab2 = { 0xad, 0xf7, 0x97, 0x29, 0xcb, 0xcc, 0x5c, 0xc0, 0x48, 0xb6, 0x56, 0x6a, 0x72, 0x01, 0x26, 0x0b, 0x93, 0x0d, 0xd4, 0x6e, 0x70, 0xc5, 0x16, 0x6f, 0xd3, 0x68, 0xa6, 0xa0, 0x27, 0x3c, 0x08, 0x2b, 0x8b, 0xa5, 0x49, 0xee, 0x7d, 0x18, 0xfa, 0xe5, 0x39, 0x9a, 0x40, 0xdf, 0x91, 0x28, 0x12, 0x9e, 0xc7, 0xe0, 0x6c, 0xaa, 0xe3, 0x13, 0xed, 0x7a, 0xb1, 0x9d, 0x67, 0x8d, 0xae, 0x49, 0x10, 0xe5, 0xcd, 0x46, 0x4b, 0xd8, 0x3d, 0xd2, 0x21, 0xae, 0x63, 0x12, 0xe9, 0x78, 0xee, 0xd7, 0x07, 0x22, 0xc3, 0xde, 0xe5, 0xfc, 0x56, 0x47, 0x10, 0x72, 0xf9, 0xb3, 0xe3, 0xf3, 0x04, 0x2f, 0x3c, 0x24, 0x0f, 0x46, 0x36, 0x9c, 0x17, 0x26, 0x4a, 0x92, 0x60, 0x72, 0xcd, 0x91, 0x2b, 0x21, 0xd4, 0x96, 0x5f, 0xa2, 0x93, 0x03, 0x41, 0xb5, 0x86, 0x8a, 0x46, 0x29, 0x38, 0x87, 0x82, 0x91, 0x0b, 0xeb, 0x45, 0xef, 0x6c, 0x3d, 0x34, 0x1d, 0xa5, 0x92, 0xe0, 0x84, 0xba, 0xba, 0x83, 0xc6, 0x97, 0x03, 0xf9, 0xc2, 0x19, 0x4e, 0x8c, 0xc7, 0x5c, 0xed, 0x85, 0x9f, 0x52, 0x8c, 0x7f, 0x17, 0xbe, 0x0e, 0x18, 0xaf, 0x47, 0x2d, 0x46, 0x73, 0x9c, 0xd1, 0x38, 0xe1, 0x37, 0x5a, 0xf9, 0x4a, 0xef, 0x4b, 0xb3, 0x18, 0x73, 0x07, 0x8d, 0x98, 0x30, 0x68, 0xdd, 0x9d, 0x85, 0xba, 0x3b, 0x8f, 0x1b, 0xb4, 0x20, 0xe3, 0x95, 0x0f, 0xb3, 0x3d, 0xfe, 0x09, 0x86, 0x24, 0x25, 0x6d, 0x14, 0xb2, 0xdd, 0x6f, 0x4f, 0x7f, 0x52, 0x85, 0x32, 0x9f, 0x63, 0x25, 0x0a, 0xc3, 0x5f, 0xbb, 0xb0, 0xeb, 0xbd, 0xcf, 0xbf, 0xfe, 0x26, 0x51, 0xb5, 0x30, 0xec, 0xa8, 0xdf, 0xfd, 0xae, 0x28, 0x90, 0x41, 0x88, 0x71, 0x18, 0x25, 0x09, 0x72, 0xb1, 0x7d, 0xdf, 0x2e, 0xe6, 0x6f, 0x11, 0x67, 0x56, 0x23, 0x0d, 0x7d };
+        private static byte[] reverseMagicTab2 = new byte[256];
+
+        private static byte[] initial_prev_xor = { 0xad, 0x2f, 0x42, 0x30, 0x67, 0x04, 0xb0, 0x9c, 0x9d, 0x2a, 0xc0, 0xba, 0x0e, 0xbf, 0xa5, 0x68 };
+        public struct m_header_fields
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x18)]
+            public byte[] filler1;
+            public uint stringLiteralDataOffset; // 18
+            public uint stringLiteralDataCount; // 1c
+            public uint stringLiteralOffset; // 20
+            public uint stringLiteralCount; // 24
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0xd8 - 0x28)]
+            public byte[] filler2;
+            public uint stringOffset, stringCount;
+        };
+
+        private static int headersize = Marshal.SizeOf(typeof(m_header_fields));
+        private static int litealsize = Marshal.SizeOf(typeof(m_literal));
+        public struct m_literal
+        {
+            public uint offset, length;
+        };
+
+        public static byte[] decrypt_global_metadata(byte[] data, int size)
+        {
+            byte[] longkey;
+            byte[] longkeyp;
+            byte[] shortkey;
+            byte[] key = new byte[0x4000];
+            Buffer.BlockCopy(data, size - 0x4000, key, 0, 0x4000);
+            get_global_metadata_keys(key, 0x4000, out longkey, out shortkey);
+            for (int i = 0; i < 16; i++)
+                shortkey[i] ^= initial_prev_xor[i];
+
+            memecrypto_prepare_key(longkey, out longkeyp);
+
+            int perentry = size / 0x100 / 0x40;
+            for (int i = 0; i < 0x100; i++)
+            {
+                int off = (int)(0x40u * perentry * i);
+
+                byte[] prev = new byte[16];
+                Buffer.BlockCopy(shortkey, 0, prev, 0, 16);
+                for (int j = 0; j < 4; j++)
+                {
+                    byte[] curr = new byte[16];
+                    Buffer.BlockCopy(data, off + j * 0x10, curr, 0, 16);
+
+                    curr = memecrypto_decrypt(longkeyp, curr);
+
+                    for (int k = 0; k < 16; k++)
+                        curr[k] ^= prev[k];
+
+                    Buffer.BlockCopy(data, off + j * 0x10, prev, 0, 16);
+                    Buffer.BlockCopy(curr, 0, data, off + j * 0x10, 16);
+                }
+            }
+
+            byte[] literal_dec_key;
+            data = decrypt_global_metadata_header_string_fields(data, size, out literal_dec_key);
+            data = decrypt_global_metadata_header_string_literals(data, size, literal_dec_key);
+            return data;
+        }
+
+        public static void memecrypto_prepare_key(byte[] data, out byte[] data2)
+        {
+            data2 = new byte[0xB0];
+            for (int i = 0; i < 0xB0; i++)
+            {
+                for (int i2 = 0; i2 < 16; i2++)
+                    data2[i] ^= data[0x10 * i + i2];
+            }
+        }
+
+        private static byte[] memecrypto_decrypt(byte[] key, byte[] data)
+        {
+            for (int i = 0; i < 0x10; i++)
+                data[i] ^= key[i];
+
+            for (int i = 1; i < 10; i++)
+            {
+                uint[] lbuf = new uint[4];
+
+                for (int j = 0; j < 4; j++)
+                {
+                    lbuf[j] ^= magicTab_0[data[shuffleTab[4 * j]]];
+                    lbuf[j] ^= magicTab_1[data[shuffleTab[4 * j + 1]]];
+                    lbuf[j] ^= magicTab_2[data[shuffleTab[4 * j + 2]]];
+                    lbuf[j] ^= magicTab_3[data[shuffleTab[4 * j + 3]]];
+                }
+
+                for (int j = 0; j < 0x4; j++)
+                {
+                    byte[] tmp = BitConverter.GetBytes(lbuf[j] ^ BitConverter.ToUInt32(key, 0x10 * i + 0x4 * j));
+                    for (int j2 = 0; j2 < 0x4; j2++)
+                    {
+                        data[j * 0x4 + j2] = tmp[j2];
+                    }
+                }
+            }
+
+            byte[] buf2 = new byte[0x10];
+            for (int i = 0; i < 0x10; i++)
+            {
+                byte x = data[shuffleTab[i]];
+                buf2[i] = (byte)(~x ^ magicTab2[x]);
+            }
+
+            for (int i = 0; i < 0x10; i++)
+                data[i] = (byte)(buf2[i] ^ key[0x10 * 10 + i]);
+
+            return data;
+        }
+
+        private static byte[] decrypt_global_metadata_header_string_fields(byte[] data, int len, out byte[] literal_dec_key)
+        {
+            if (len < headersize)
+                Console.WriteLine("data not big enough for global metadata header");
+
+            uint[] values = new uint[0x12];
+            values[0] = BitConverter.ToUInt32(data, 0x60);
+            values[1] = BitConverter.ToUInt32(data, 0x64);
+            values[2] = BitConverter.ToUInt32(data, 0x68);
+            values[3] = BitConverter.ToUInt32(data, 0x6c);
+            values[4] = BitConverter.ToUInt32(data, 0x140);
+            values[5] = BitConverter.ToUInt32(data, 0x144);
+            values[6] = BitConverter.ToUInt32(data, 0x148);
+            values[7] = BitConverter.ToUInt32(data, 0x14c);
+            values[8] = BitConverter.ToUInt32(data, 0x100);
+            values[9] = BitConverter.ToUInt32(data, 0x104);
+            values[10] = BitConverter.ToUInt32(data, 0x108);
+            values[11] = BitConverter.ToUInt32(data, 0x10c);
+            values[12] = BitConverter.ToUInt32(data, 0xf0);
+            values[13] = BitConverter.ToUInt32(data, 0xf4);
+            values[14] = BitConverter.ToUInt32(data, 0x8);
+            values[15] = BitConverter.ToUInt32(data, 0xc);
+            values[16] = BitConverter.ToUInt32(data, 0x10);
+            values[17] = BitConverter.ToUInt32(data, 0x14);
+
+            ulong seed = values[values[0] & 0xfu];
+            seed = (seed << 0x20) | values[(values[0x11] & 0xf) + 2];
+
+            mt19937_64 gen = new mt19937_64();
+            gen.init(seed);
+
+            IntPtr paramPtr = Marshal.AllocHGlobal(headersize);
+            Marshal.Copy(data, 0, paramPtr, headersize);
+            m_header_fields header = (m_header_fields)Marshal.PtrToStructure(paramPtr, typeof(m_header_fields));
+
+            header.stringCount ^= (uint)gen.next();
+            header.stringOffset ^= (uint)gen.next();
+            //header.stringLiteralCount ^= (uint)gen.next();
+            gen.next();
+            header.stringLiteralOffset ^= (uint)gen.next();
+            header.stringLiteralDataCount ^= (uint)gen.next();
+            header.stringLiteralDataOffset ^= (uint)gen.next();
+
+            Buffer.BlockCopy(StructToBytes(header), 0, data, 0, headersize);
+
+            literal_dec_key = new byte[0x5000];
+            for (int i = 0; i < 0xa00; i++)
+            {
+                byte[] key64 = tobytes(gen.next());
+                for (int i2 = 0; i2 < 8; i2++)
+                    literal_dec_key[i * 8 + i2] = key64[i2];
+            }
+            return data;
+        }
+
+        private static byte[] decrypt_global_metadata_header_string_literals(byte[] data, int len, byte[] literal_dec_key)
+        {
+            if (len < headersize)
+                Console.WriteLine("data not big enough for global metadata header");
+
+            IntPtr paramPtr = Marshal.AllocHGlobal(headersize);
+            Marshal.Copy(data, 0, paramPtr, headersize);
+            m_header_fields header = (m_header_fields)Marshal.PtrToStructure(paramPtr, typeof(m_header_fields));
+
+            if (header.stringLiteralCount + header.stringLiteralOffset > len)
+                Console.WriteLine("file trimmed or string literal offset/count field invalid");
+
+            int count = (int)(header.stringLiteralCount / litealsize);
+
+            m_literal[] literals = new m_literal[count];
+            GCHandle gcHandle = GCHandle.Alloc(literals, GCHandleType.Pinned);
+            Marshal.Copy(data, (int)header.stringLiteralOffset, gcHandle.AddrOfPinnedObject(), (int)header.stringLiteralCount);
+
+            for (int i = 0; i < count; i++)
+            {
+                int slen = (int)literals[i].length;
+                byte[] str = new byte[slen];
+                byte[] okey = new byte[slen];
+                Buffer.BlockCopy(data, (int)(header.stringLiteralDataOffset + literals[i].offset), str, 0, slen);
+                Buffer.BlockCopy(literal_dec_key, i % 0x2800, okey, 0, slen);
+
+                if (header.stringLiteralDataOffset + literals[i].offset + slen > len)
+                    Console.WriteLine("file trimmed or contains invalid string entry");
+
+                for (int j = 0; j < slen; j++)
+                    str[j] ^= (byte)(literal_dec_key[(j + 0x1400u) % 0x5000u] ^ (okey[j % 0x2800u] + (byte)j));
+
+                Buffer.BlockCopy(str, 0, data, (int)(header.stringLiteralDataOffset + literals[i].offset), slen);
+            }
+            gcHandle.Free();
+            return data;
+        }
+
+        private static bool get_global_metadata_keys(byte[] src, int srcn, out byte[] longkey, out byte[] shortkey)
+        {
+            longkey = new byte[0xB00];
+            shortkey = new byte[16];
+            if (srcn != 0x4000)
+                return false;
+
+            if (BitConverter.ToUInt16(src, 0xc8) != 0xfc2e || BitConverter.ToUInt16(src, 0xca) != 0x2cfe)
+                return true;
+
+            ushort offB00 = BitConverter.ToUInt16(src, 0xd2);
+
+            for (int i = 0; i < 16; i++)
+                shortkey[i] = (byte)(src[offB00 + i] ^ src[0x3000 + i]);
+
+            for (int i = 0; i < 0xb00; i++)
+                longkey[i] = (byte)(src[offB00 + 0x10 + i] ^ src[0x3000 + 0x10 + i] ^ shortkey[i % 16]);
+
+            return true;
+        }
+
+        public static byte[] StructToBytes(object structObj)
+        {
+            int size = Marshal.SizeOf(structObj);
+            byte[] bytes = new byte[size];
+            IntPtr structPtr = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr(structObj, structPtr, false);
+            Marshal.Copy(structPtr, bytes, 0, size);
+            Marshal.FreeHGlobal(structPtr);
+            return bytes;
+        }
+        public static byte[] tobytes(ulong a)
+        {
+
+            byte[] b = new byte[8];
+            b[0] = (byte)(a & 0xFF);
+            b[1] = (byte)(a >> 8 & 0xFF);
+            b[2] = (byte)(a >> 16 & 0xFF);
+            b[3] = (byte)(a >> 24 & 0xFF);
+            b[4] = (byte)(a >> 32 & 0xFF);
+            b[5] = (byte)(a >> 40 & 0xFF);
+            b[6] = (byte)(a >> 48 & 0xFF);
+            b[7] = (byte)(a >> 56 & 0xFF);
+            return b;
+        }
+    }
+    class mt19937_64
+    {
+        static readonly int nx = 312;
+        static readonly int mx = 156;
+
+        ulong[] ax = new ulong[nx * 2];
+        int idx = nx;
+
+        void _Refill_lower()
+        {   // compute values for the lower half of the history array
+            int _Ix;
+            for (_Ix = 0; _Ix < nx - mx; ++_Ix)
+            {   // fill in lower region
+                ulong Tmp = (ax[_Ix + nx] & 18446744071562067968UL)
+                    | (ax[_Ix + nx + 1] & 2147483647UL);
+
+                ax[_Ix] = (Tmp >> 1)
+                    ^ Check(Tmp) ^ ax[_Ix + nx + mx];
+            }
+
+            for (; _Ix < nx - 1; ++_Ix)
+            {   // fill in upper region (avoids modulus operation)
+                ulong Tmp = (ax[_Ix + nx] & 18446744071562067968UL)
+                    | (ax[_Ix + nx + 1] & 2147483647UL);
+
+                ax[_Ix] = (Tmp >> 1)
+                    ^ Check(Tmp) ^ ax[_Ix - nx + mx];
+            }
+
+            ulong _Tmp = (ax[_Ix + nx] & 18446744071562067968UL) | (ax[0] & 2147483647UL);
+            ax[_Ix] = (_Tmp >> 1)
+                ^ Check(_Tmp) ^ ax[mx - 1];
+            idx = 0;
+        }
+
+        void _Refill_upper()
+        {   // compute values for the upper half of the history array
+            int _Ix;
+            for (_Ix = nx; _Ix < 2 * nx; ++_Ix)
+            {   // fill in values
+                ulong _Tmp = (ax[_Ix - nx] & 18446744071562067968UL)
+                    | (ax[_Ix - nx + 1] & 2147483647UL);
+                ax[_Ix] = (_Tmp >> 1)
+                ^ Check(_Tmp) ^ ax[_Ix - nx + mx];
+            }
+        }
+
+        ulong Check(ulong temp)
+        {
+            temp = temp & 1;
+            if (temp != 0)
+                return 0xb5026f5aa96619e9UL;
+            else
+                return 0;
+        }
+
+        public void init(ulong seed)
+        {
+            ulong _Prev = ax[0] = seed & 18446744073709551615UL;
+            for (int _Ix = 1; _Ix < nx; ++_Ix)
+                _Prev = ax[_Ix] =
+                    ((ulong)_Ix + 6364136223846793005UL * (_Prev ^ (_Prev >> (64 - 2)))) & 18446744073709551615UL;
+        }
+
+        public ulong next()
+        {
+            if (idx == nx)
+                _Refill_upper();
+            else if (2 * nx <= idx)
+                _Refill_lower();
+
+            ulong _Res = ax[idx++] & 18446744073709551615UL;
+            _Res ^= (_Res >> 29) & 6148914691236517205UL;
+            _Res ^= (_Res << 17) & 0x71d67fffeda60000UL;
+            _Res ^= (_Res << 37) & 0xfff7eee000000000UL;
+            _Res ^= (_Res & 18446744073709551615UL) >> 43;
+            return (_Res);
+        }
+    }
+}
