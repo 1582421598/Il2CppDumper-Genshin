@@ -4,6 +4,8 @@
 
 修改版本的Il2CppDumper，允许你Dump原神的UserAssembly.dll
 
+仅支持原神2.7及以上版本
+
 Unity il2cpp逆向工程
 
 ## 功能

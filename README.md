@@ -4,6 +4,8 @@ If this project affects you, please contact: 1582421598@badguys.club
 
 Modified version of Il2CppDumper allows you to dump methods of UserAssembly.dll of the game Genshin Impact
 
+Only supports Genshin Impact 2.7 and above
+
 中文说明请戳[这里](README.zh-CN.md)
 
 Unity il2cpp reverse engineer
