@@ -43,8 +43,7 @@ namespace Il2CppDumper
                 {
                     if (File.Exists(arg))
                     {
-                        var file = File.ReadAllBytes(arg);
-                        if (BitConverter.ToUInt32(file, 0) == 0xFAB11BAF)
+                        if (arg.Contains("global-metadata.dat"))
                         {
                             metadataPath = arg;
                         }

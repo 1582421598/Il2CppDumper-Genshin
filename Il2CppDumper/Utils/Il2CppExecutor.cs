@@ -38,7 +38,7 @@ namespace Il2CppDumper
             this.metadata = metadata;
             this.il2Cpp = il2Cpp;
 
-            if ((il2Cpp.Version >= 27 && il2Cpp.Version < 29)&& !Program.IsGenshinMetadata)
+            if ((il2Cpp.Version >= 27 && il2Cpp.Version < 29) && !Program.IsGenshinMetadata)
             {
                 customAttributeGenerators = new ulong[metadata.imageDefs.Sum(x => x.customAttributeCount)];
                 foreach (var imageDef in metadata.imageDefs)
@@ -274,7 +274,11 @@ namespace Il2CppDumper
 
         public Il2CppTypeDefinition GetGenericClassTypeDefinition(Il2CppGenericClass genericClass)
         {
-            if (il2Cpp.Version >= 27 && !Program.IsGenshinMetadata)
+            if (Program.IsGenshinMetadata)
+            {
+                return metadata.typeDefs[genericClass.type];
+            }
+            if (il2Cpp.Version >= 27)
             {
                 var il2CppType = il2Cpp.GetIl2CppType(genericClass.type);
                 if (il2CppType == null)
