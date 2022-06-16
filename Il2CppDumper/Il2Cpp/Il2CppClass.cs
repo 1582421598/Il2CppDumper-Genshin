@@ -17,8 +17,12 @@ namespace Il2CppDumper
         public ulong invokerPointers;
         public long customAttributeCount;
         public ulong customAttributeGenerators;
-        public long unresolvedVirtualCallCount;
+        public long unresolvedVirtualCallCount; //29.1 unresolvedIndirectCallCount;
         public ulong unresolvedVirtualCallPointers;
+        [Version(Min = 29.1)]
+        public ulong unresolvedInstanceCallPointers;
+        [Version(Min = 29.1)]
+        public ulong unresolvedStaticCallPointers;
         public ulong interopDataCount;
         public ulong interopData;
         public ulong windowsRuntimeFactoryCount;
